@@ -63,11 +63,10 @@ export function Header() {
   const hasSocialLinks = Boolean(socialLinks.facebookUrl || socialLinks.instagramUrl || socialLinks.youtubeUrl);
 
   return (
-    <header
-      className="sticky top-0 z-50 border-b border-white/30 bg-white/80 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)]"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
-    >
-      <Container className="relative flex min-h-16 min-w-0 items-center gap-3">
+    <header className="sticky top-0 z-50">
+      <div style={{ height: "env(safe-area-inset-top)" }} />
+      <div className="border-b border-white/30 bg-white/80 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+        <Container className="relative flex min-h-16 min-w-0 items-center gap-3">
         <div className="min-w-0 flex-1">
           <Link
             href="/"
@@ -133,7 +132,8 @@ export function Header() {
         <div className="ml-auto shrink-0 md:hidden">
           <MobileMenu socialLinks={socialLinks} />
         </div>
-      </Container>
+        </Container>
+      </div>
     </header>
   );
 }
