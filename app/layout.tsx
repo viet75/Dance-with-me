@@ -49,6 +49,9 @@ export default function RootLayout({
       lang="it"
       className={`${geistSans.variable} ${geistMono.variable} h-full min-w-0 antialiased`}
     >
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </head>
       <body className="flex min-h-full min-w-0 flex-col bg-black text-white">
         <Header />
         <main className="min-w-0 flex-1">{children}</main>
