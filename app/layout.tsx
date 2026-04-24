@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 import "./globals.css";
 
@@ -53,6 +54,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className="flex min-h-full min-w-0 flex-col bg-black text-white">
+        <ScrollToTop />
         <Header />
         <main className="min-w-0 flex-1">{children}</main>
         <Footer />

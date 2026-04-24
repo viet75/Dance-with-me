@@ -1,7 +1,7 @@
 {
     "id": "/",
     "name": "Dance With Me",
-    "short_name": "Dance",
+    "short_name": "Dance With Me",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
