@@ -104,7 +104,7 @@ export default function AdminChiSiamoPage() {
       .update({ image_url: null })
       .eq("id", recordId)
       .select("*")
-      .single();
+      .maybeSingle();
 
     if (error) {
       setErrorMessage(getReadableErrorMessage("Errore durante la rimozione dell'immagine", error));
@@ -178,37 +178,12 @@ export default function AdminChiSiamoPage() {
       description,
       image_url,
       quote,
+      updated_at: new Date().toISOString(),
     };
 
-    if (recordId) {
-      const { data: updated, error } = await supabase
-        .from("about_content")
-        .update(payload)
-        .eq("id", recordId)
-        .select("*")
-        .single();
-
-      if (error) {
-        setErrorMessage(getReadableErrorMessage("Errore durante il salvataggio", error));
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (updated) {
-        setForm(rowToForm(updated as AboutContent));
-      }
-
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      setSuccessMessage("Salvataggio completato.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { data: inserted, error } = await supabase.from("about_content").insert(payload).select("*").single();
+    const { data, error } = recordId
+      ? await supabase.from("about_content").update(payload).eq("id", recordId).select("*").maybeSingle()
+      : await supabase.from("about_content").insert(payload).select("*").maybeSingle();
 
     if (error) {
       setErrorMessage(getReadableErrorMessage("Errore durante il salvataggio", error));
@@ -216,9 +191,10 @@ export default function AdminChiSiamoPage() {
       return;
     }
 
-    if (inserted) {
-      setRecordId(inserted.id);
-      setForm(rowToForm(inserted as AboutContent));
+    if (data) {
+      const saved = data as AboutContent;
+      setRecordId(saved.id);
+      setForm(rowToForm(saved));
     }
 
     setFile(null);

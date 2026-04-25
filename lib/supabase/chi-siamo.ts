@@ -5,12 +5,12 @@ export async function getAboutContent(): Promise<{
   data: AboutContent | null;
   error: any;
 }> {
-  const { data, error } = await supabase.from("about_content").select("*").limit(1);
+  const { data, error } = await supabase
+    .from("about_content")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (error) {
-    return { data: null, error };
-  }
-
-  const row = data?.[0] ?? null;
-  return { data: row as AboutContent | null, error: null };
+  return { data: (data as AboutContent | null) ?? null, error };
 }
