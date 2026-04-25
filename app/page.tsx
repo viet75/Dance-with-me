@@ -8,6 +8,8 @@ import { QuickLinksSection } from "@/components/home/QuickLinksSection";
 import { SchedulePreviewSection } from "@/components/home/SchedulePreviewSection";
 import { VideosSection } from "@/components/home/VideosSection";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <div className="min-w-0 w-full">

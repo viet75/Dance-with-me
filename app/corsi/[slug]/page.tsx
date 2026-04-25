@@ -6,6 +6,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getCourseBySlug } from "@/lib/supabase/courses";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ slug: string }>;
 };

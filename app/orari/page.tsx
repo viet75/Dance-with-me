@@ -5,6 +5,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { formatItalianDay, formatTime, getActiveSchedules, type ScheduleView } from "@/lib/supabase/schedules";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Orari | Dance With Me",
   description: "Visualizza gli orari settimanali dei corsi Dance With Me.",

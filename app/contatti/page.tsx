@@ -5,6 +5,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getSiteSettings, getWhatsAppLink, normalizeExternalUrl } from "@/lib/supabase/site-settings";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Contatti | Dance With Me",
   description: "Contatta Dance With Me per informazioni su corsi e iscrizioni.",

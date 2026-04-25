@@ -5,6 +5,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getActiveGalleryImages } from "@/lib/supabase/gallery";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Galleria | Dance With Me",
   description: "Scopri foto di lezioni, workshop e performance della scuola Dance With Me.",

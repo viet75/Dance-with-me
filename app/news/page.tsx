@@ -6,6 +6,8 @@ import { getPublishedNews } from "@/lib/supabase/news";
 import { formatNewsDate } from "@/lib/utils/news";
 import { toYoutubeEmbedUrl } from "@/lib/utils/youtube";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "News | Dance With Me",
   description: "Leggi novita, eventi e annunci della scuola Dance With Me.",

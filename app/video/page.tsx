@@ -4,6 +4,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getActiveVideos, toYoutubeEmbedUrl } from "@/lib/supabase/videos";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Video | Dance With Me",
   description: "Guarda i video YouTube della scuola Dance With Me.",

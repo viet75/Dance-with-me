@@ -7,6 +7,8 @@ import { getPublishedNewsArticleBySlug } from "@/lib/supabase/news";
 import { formatNewsDate, getNewsContentPreview } from "@/lib/utils/news";
 import { toYoutubeEmbedUrl } from "@/lib/utils/youtube";
 
+export const dynamic = "force-dynamic";
+
 type NewsArticlePageProps = {
   params: Promise<{ slug: string }>;
 };

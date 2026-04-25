@@ -5,6 +5,8 @@ import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getActiveCourses } from "@/lib/supabase/courses";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Corsi | Dance With Me",
   description: "Scopri i corsi disponibili di Dance With Me.",
