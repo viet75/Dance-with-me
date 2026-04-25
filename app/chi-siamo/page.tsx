@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Container } from "@/components/shared/Container";
 import { getAboutContent } from "@/lib/supabase/chi-siamo";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Chi siamo | Dance With Me",
   description: "Chi siamo",

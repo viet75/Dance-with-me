@@ -5,12 +5,7 @@ export async function getAboutContent(): Promise<{
   data: AboutContent | null;
   error: any;
 }> {
-  const { data, error } = await supabase
-    .from("about_content")
-    .select("*")
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await supabase.from("about_content").select("*").maybeSingle();
 
   return { data: (data as AboutContent | null) ?? null, error };
 }
