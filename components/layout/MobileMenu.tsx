@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { publicNavItems } from "@/lib/utils/navigation";
 import { cn } from "@/lib/utils/cn";
@@ -38,14 +38,53 @@ function SocialIconLink({
 export function MobileMenu({ socialLinks }: { socialLinks: MobileSocialLinks }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const menuId = "mobile-navigation";
   const hasSocialLinks = Boolean(socialLinks.facebookUrl || socialLinks.instagramUrl || socialLinks.youtubeUrl);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+
+      if (menuRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+        return;
+      }
+
+      setOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, []);
 
   return (
     <div className="relative z-[60] shrink-0 pointer-events-auto md:hidden">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((prev) => !prev)}
         className="relative z-[70] inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center gap-2 rounded-xl border border-black/5 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-150 ease-out pointer-events-auto hover:bg-white hover:shadow-[0_6px_18px_rgba(15,23,42,0.12)] active:scale-[0.97] active:shadow-[0_2px_8px_rgba(15,23,42,0.10)]"
         aria-expanded={open}
         aria-controls={menuId}
@@ -55,6 +94,7 @@ export function MobileMenu({ socialLinks }: { socialLinks: MobileSocialLinks }) 
       </button>
       {open ? (
         <div
+          ref={menuRef}
           id={menuId}
           className="absolute right-0 top-full z-[80] mt-2 w-[min(18rem,calc(100vw-2rem))] max-h-[min(70vh,24rem)] overflow-y-auto rounded-xl border border-border bg-white p-4 shadow-xl pointer-events-auto"
         >

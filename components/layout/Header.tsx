@@ -83,7 +83,7 @@ export function Header() {
               className="rounded-md"
               priority
             />
-            <span className="truncate text-lg font-semibold tracking-tight">
+            <span className="truncate text-lg font-semibold tracking-tight max-md:landscape:hidden md:inline">
               Dance With Me
             </span>
           </Link>
