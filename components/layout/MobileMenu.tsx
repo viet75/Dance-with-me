@@ -79,6 +79,18 @@ export function MobileMenu({ socialLinks }: { socialLinks: MobileSocialLinks }) 
     };
   }, []);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   return (
     <div className="relative z-[60] shrink-0 pointer-events-auto md:hidden">
       <button
@@ -92,61 +104,77 @@ export function MobileMenu({ socialLinks }: { socialLinks: MobileSocialLinks }) 
       >
         {open ? "Chiudi" : "Menu"}
       </button>
-      {open ? (
+      <>
+        <div
+          className={cn(
+            "fixed inset-0 z-[65] bg-purple-950/10 backdrop-blur-[1px] transition-opacity duration-200",
+            open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          )}
+          aria-hidden="true"
+        />
         <div
           ref={menuRef}
           id={menuId}
-          className="absolute right-0 top-full z-[80] mt-2 w-[min(18rem,calc(100vw-2rem))] max-h-[min(70vh,24rem)] overflow-y-auto rounded-xl border border-border bg-white p-4 shadow-xl pointer-events-auto"
+          className={cn(
+            "absolute right-0 top-full z-[80] mt-2 w-[min(18rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-purple-100/70 bg-white/95 shadow-[0_20px_60px_rgba(88,28,135,0.16)] backdrop-blur-md transition-all duration-200 ease-out",
+            open
+              ? "pointer-events-auto opacity-100 translate-y-0 scale-100"
+              : "pointer-events-none opacity-0 -translate-y-2 scale-[0.98]",
+          )}
         >
-          <nav className="flex flex-col gap-1">
-            {publicNavItems.map((item) => {
-              const isActive = pathname === item.href;
+          <div className="max-h-[calc(100vh-110px)] overflow-y-auto scrollbar-none p-3">
+            <nav className="flex flex-col gap-1.5">
+              {publicNavItems.map((item) => {
+                const isActive = pathname === item.href;
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex min-h-11 items-center rounded-md px-3 py-3 text-sm font-medium transition-colors",
-                    isActive ? "bg-primary-soft text-primary" : "text-gray-700 hover:bg-primary-soft hover:text-primary",
-                  )}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          {hasSocialLinks ? (
-            <div className="mt-6 border-t border-border pt-4">
-              <div className="flex items-center gap-4">
-                {socialLinks.instagramUrl ? (
-                  <SocialIconLink href={socialLinks.instagramUrl} label="Instagram">
-                    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
-                      <path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 1.9A3.9 3.9 0 0 0 3.9 7.8v8.4a3.9 3.9 0 0 0 3.9 3.9h8.4a3.9 3.9 0 0 0 3.9-3.9V7.8a3.9 3.9 0 0 0-3.9-3.9H7.8zm8.8 1.4a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4zM12 7a5 5 0 1 1 0 10.1A5 5 0 0 1 12 7zm0 1.9a3.1 3.1 0 1 0 0 6.3 3.1 3.1 0 0 0 0-6.3z" />
-                    </svg>
-                  </SocialIconLink>
-                ) : null}
-                {socialLinks.facebookUrl ? (
-                  <SocialIconLink href={socialLinks.facebookUrl} label="Facebook">
-                    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
-                      <path d="M13.5 8.5V6.8c0-.8.5-1.3 1.4-1.3h1.6V2.6c-.3 0-1.3-.1-2.5-.1-2.6 0-4.4 1.6-4.4 4.5v1.5H7v3.3h2.6v8.2h3.9v-8.2h2.9l.5-3.3h-3.4z" />
-                    </svg>
-                  </SocialIconLink>
-                ) : null}
-                {socialLinks.youtubeUrl ? (
-                  <SocialIconLink href={socialLinks.youtubeUrl} label="YouTube">
-                    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
-                      <path d="M21.8 8.1a3 3 0 0 0-2.1-2.1C17.9 5.5 12 5.5 12 5.5s-5.9 0-7.7.5A3 3 0 0 0 2.2 8.1 31 31 0 0 0 1.8 12c0 1.3.1 2.6.4 3.9a3 3 0 0 0 2.1 2.1c1.8.5 7.7.5 7.7.5s5.9 0 7.7-.5a3 3 0 0 0 2.1-2.1c.3-1.3.4-2.6.4-3.9 0-1.3-.1-2.6-.4-3.9zM10.1 15V9l5.2 3-5.2 3z" />
-                    </svg>
-                  </SocialIconLink>
-                ) : null}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex min-h-11 items-center rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors transition-transform duration-150 active:scale-[0.98]",
+                      isActive
+                        ? "bg-purple-100 text-purple-700 shadow-sm"
+                        : "text-gray-700 hover:bg-purple-50 hover:text-purple-700 active:bg-purple-50 active:text-purple-700",
+                    )}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            {hasSocialLinks ? (
+              <div className="mt-3 border-t border-gray-200 pt-3">
+                <div className="flex items-center gap-4">
+                  {socialLinks.instagramUrl ? (
+                    <SocialIconLink href={socialLinks.instagramUrl} label="Instagram">
+                      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
+                        <path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 1.9A3.9 3.9 0 0 0 3.9 7.8v8.4a3.9 3.9 0 0 0 3.9 3.9h8.4a3.9 3.9 0 0 0 3.9-3.9V7.8a3.9 3.9 0 0 0-3.9-3.9H7.8zm8.8 1.4a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4zM12 7a5 5 0 1 1 0 10.1A5 5 0 0 1 12 7zm0 1.9a3.1 3.1 0 1 0 0 6.3 3.1 3.1 0 0 0 0-6.3z" />
+                      </svg>
+                    </SocialIconLink>
+                  ) : null}
+                  {socialLinks.facebookUrl ? (
+                    <SocialIconLink href={socialLinks.facebookUrl} label="Facebook">
+                      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
+                        <path d="M13.5 8.5V6.8c0-.8.5-1.3 1.4-1.3h1.6V2.6c-.3 0-1.3-.1-2.5-.1-2.6 0-4.4 1.6-4.4 4.5v1.5H7v3.3h2.6v8.2h3.9v-8.2h2.9l.5-3.3h-3.4z" />
+                      </svg>
+                    </SocialIconLink>
+                  ) : null}
+                  {socialLinks.youtubeUrl ? (
+                    <SocialIconLink href={socialLinks.youtubeUrl} label="YouTube">
+                      <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
+                        <path d="M21.8 8.1a3 3 0 0 0-2.1-2.1C17.9 5.5 12 5.5 12 5.5s-5.9 0-7.7.5A3 3 0 0 0 2.2 8.1 31 31 0 0 0 1.8 12c0 1.3.1 2.6.4 3.9a3 3 0 0 0 2.1 2.1c1.8.5 7.7.5 7.7.5s5.9 0 7.7-.5a3 3 0 0 0 2.1-2.1c.3-1.3.4-2.6.4-3.9 0-1.3-.1-2.6-.4-3.9zM10.1 15V9l5.2 3-5.2 3z" />
+                      </svg>
+                    </SocialIconLink>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
-      ) : null}
+      </>
     </div>
   );
 }
