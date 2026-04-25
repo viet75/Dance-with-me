@@ -75,6 +75,7 @@ export default function AdminNewsPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [sendNotification, setSendNotification] = useState(false);
 
   const fetchNews = useCallback(async () => {
     setIsLoading(true);
@@ -106,6 +107,7 @@ export default function AdminNewsPage() {
   const resetForm = () => {
     setForm(initialFormState);
     setEditingId(null);
+    setSendNotification(false);
     setSelectedCoverFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -221,19 +223,42 @@ export default function AdminNewsPage() {
       content,
       cover_image,
       youtube_url: youtubeRaw || null,
-      published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
+      published_at: form.published_at ? new Date(form.published_at).toISOString() : new Date().toISOString(),
     };
 
     setIsSubmitting(true);
 
     const { error } = editingId
-      ? await supabase.from("news").update(payload).eq("id", editingId)
-      : await supabase.from("news").insert({ ...payload, is_published: true });
+      ? await supabase
+          .from("news")
+          .update({ ...payload, is_published: true })
+          .eq("id", editingId)
+      : await supabase
+          .from("news")
+          .insert({ ...payload, is_published: true });
 
     if (error) {
       setErrorMessage(getReadableErrorMessage("Errore durante il salvataggio della news", error));
       setIsSubmitting(false);
       return;
+    }
+
+    if (sendNotification) {
+      try {
+        await fetch("/api/push/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            body: title,
+            url: `/news/${slug}`,
+          }),
+        });
+      } catch (error) {
+        console.error("Errore invio notifica:", error);
+      }
     }
 
     setSuccessMessage("Salvataggio completato");
@@ -410,6 +435,21 @@ export default function AdminNewsPage() {
               <span className="text-xs text-gray-500">Opzionale. Formati immagine consigliati: JPG, PNG, WebP.</span>
             )}
           </div>
+
+          <label className="flex items-start gap-3 rounded-xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm md:col-span-2">
+            <input
+              type="checkbox"
+              checked={sendNotification}
+              onChange={(event) => setSendNotification(event.target.checked)}
+              className="mt-0.5 h-5 w-5 shrink-0 rounded border-purple-300 text-primary"
+            />
+            <span className="text-gray-700">
+              <span className="block font-medium text-gray-900">Invia notifica agli utenti</span>
+              <span className="block text-xs text-gray-600">
+                Usa questa opzione solo per avvisi importanti, eventi o comunicazioni urgenti.
+              </span>
+            </span>
+          </label>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap md:col-span-2">
             <button
