@@ -181,21 +181,37 @@ export default function AdminChiSiamoPage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = recordId
-      ? await supabase.from("about_content").update(payload).eq("id", recordId).select("*").maybeSingle()
-      : await supabase.from("about_content").insert(payload).select("*").maybeSingle();
-
-    if (error) {
-      setErrorMessage(getReadableErrorMessage("Errore durante il salvataggio", error));
+    let response: Response;
+    try {
+      response = await fetch("/api/admin/chi-siamo", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: recordId, ...payload }),
+      });
+    } catch (error) {
+      setErrorMessage(getReadableErrorMessage("Errore di rete durante il salvataggio", error));
       setIsSubmitting(false);
       return;
     }
 
-    if (data) {
-      const saved = data as AboutContent;
-      setRecordId(saved.id);
-      setForm(rowToForm(saved));
+    const result = (await response.json().catch(() => null)) as AboutContent | { error?: string } | null;
+
+    if (!response.ok) {
+      const apiError = result && typeof result === "object" && "error" in result ? result.error : null;
+      setErrorMessage(apiError ?? "Errore durante il salvataggio");
+      setIsSubmitting(false);
+      return;
     }
+
+    if (!result || typeof result !== "object" || !("id" in result)) {
+      setErrorMessage("Risposta salvataggio non valida.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const saved = result as AboutContent;
+    setRecordId(saved.id);
+    setForm(rowToForm(saved));
 
     setFile(null);
     if (fileInputRef.current) {
