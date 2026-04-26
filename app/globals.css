@@ -66,3 +66,13 @@ a {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+.mobile-landscape-overlay {
+  display: none;
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .mobile-landscape-overlay {
+    display: flex;
+  }
+}

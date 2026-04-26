@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { RotateDeviceOverlay } from "@/components/layout/RotateDeviceOverlay";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 import "./globals.css";
@@ -278,6 +279,7 @@ export default function RootLayout({
       <body className="flex min-h-full min-w-0 flex-col bg-black text-white">
         <ScrollToTop />
         <Header />
+        <RotateDeviceOverlay />
         <main className="min-w-0 flex-1">{children}</main>
         <Footer />
       </body>
