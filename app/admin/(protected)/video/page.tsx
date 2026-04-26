@@ -11,7 +11,7 @@ type VideoAdmin = {
   description: string | null;
   youtube_url: string;
   display_order: number;
-  is_active: boolean;
+  is_featured: boolean;
   updated_at: string;
 };
 
@@ -28,6 +28,8 @@ const initialFormState: VideoFormState = {
   youtube_url: "",
   display_order: "0",
 };
+const MAX_FEATURED_VIDEOS = 3;
+const FEATURED_LIMIT_ERROR = "Puoi mostrare massimo 3 video in Home. Deseleziona prima un altro video.";
 
 function isPlausibleYoutubeUrl(value: string): boolean {
   try {
@@ -50,7 +52,7 @@ export default function AdminVideoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [updatingFeaturedId, setUpdatingFeaturedId] = useState<string | null>(null);
   const [form, setForm] = useState<VideoFormState>(initialFormState);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function AdminVideoPage() {
 
     const { data, error } = await supabase
       .from("videos")
-      .select("id, title, description, youtube_url, display_order, is_active, updated_at")
+      .select("id, title, description, youtube_url, display_order, is_featured, updated_at")
       .order("display_order", { ascending: true });
 
     if (error) {
@@ -154,25 +156,40 @@ export default function AdminVideoPage() {
     });
   };
 
-  const onToggleActive = async (id: string, nextValue: boolean) => {
-    if (updatingStatusId) {
+  const onToggleFeatured = async (id: string, nextValue: boolean) => {
+    if (updatingFeaturedId) {
+      return;
+    }
+
+    const currentRow = videos.find((video) => video.id === id);
+    if (!currentRow) {
+      return;
+    }
+
+    if (
+      nextValue &&
+      !currentRow.is_featured &&
+      videos.filter((video) => video.is_featured && video.id !== id).length >= MAX_FEATURED_VIDEOS
+    ) {
+      setErrorMessage(FEATURED_LIMIT_ERROR);
+      setSuccessMessage(null);
       return;
     }
 
     setErrorMessage(null);
     setSuccessMessage(null);
-    setUpdatingStatusId(id);
+    setUpdatingFeaturedId(id);
 
-    const { error } = await supabase.from("videos").update({ is_active: nextValue }).eq("id", id);
+    const { error } = await supabase.from("videos").update({ is_featured: nextValue }).eq("id", id);
 
     if (error) {
-      setErrorMessage(getReadableErrorMessage("Errore durante l'aggiornamento dello stato", error));
-      setUpdatingStatusId(null);
+      setErrorMessage(getReadableErrorMessage("Errore durante l'aggiornamento della Home", error));
+      setUpdatingFeaturedId(null);
       return;
     }
 
-    setVideos((prev) => prev.map((row) => (row.id === id ? { ...row, is_active: nextValue } : row)));
-    setUpdatingStatusId(null);
+    setVideos((prev) => prev.map((row) => (row.id === id ? { ...row, is_featured: nextValue } : row)));
+    setUpdatingFeaturedId(null);
   };
 
   const onDelete = async (id: string) => {
@@ -297,9 +314,9 @@ export default function AdminVideoPage() {
                 <tr className="border-b border-border text-gray-500">
                   <th className="py-2 pr-3">Titolo</th>
                   <th className="py-2 pr-3">Link</th>
-                  <th className="py-2 pr-3">Ordine</th>
-                  <th className="py-2 pr-3">Stato</th>
-                  <th className="py-2">Azioni</th>
+                  <th className="py-2 px-3 text-center">Ordine</th>
+                  <th className="py-2 px-3 text-center">Home</th>
+                  <th className="py-2 pl-3 text-center">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -319,26 +336,25 @@ export default function AdminVideoPage() {
                         Apri video
                       </a>
                     </td>
-                    <td className="py-3 pr-3">{video.display_order}</td>
-                    <td className="py-3 pr-3">
-                      <div className="flex items-center gap-2">
+                    <td className="py-3 px-3 text-center align-middle">{video.display_order}</td>
+                    <td className="py-3 px-3 align-middle">
+                      <div className="flex items-center justify-center">
                         <input
                           type="checkbox"
-                          checked={video.is_active}
-                          onChange={(event) => void onToggleActive(video.id, event.target.checked)}
-                          disabled={updatingStatusId === video.id}
+                          checked={video.is_featured}
+                          onChange={(event) => void onToggleFeatured(video.id, event.target.checked)}
+                          disabled={updatingFeaturedId === video.id}
                           className="h-5 w-5 shrink-0 rounded border-border"
-                          aria-label={video.is_active ? "Visibile" : "Nascosto"}
+                          aria-label={video.is_featured ? "Mostrato in Home" : "Non mostrato in Home"}
                         />
-                        <span className="text-gray-700">{video.is_active ? "Visibile" : "Nascosto"}</span>
                       </div>
                     </td>
-                    <td className="py-3">
-                      <div className="flex flex-wrap gap-2">
+                    <td className="py-3 pl-3 align-middle">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => onEdit(video)}
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-border px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-md border border-border px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                           Modifica
                         </button>
@@ -346,7 +362,7 @@ export default function AdminVideoPage() {
                           type="button"
                           onClick={() => onDelete(video.id)}
                           disabled={deletingId === video.id}
-                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {deletingId === video.id ? "Elimino..." : "Elimina"}
                         </button>

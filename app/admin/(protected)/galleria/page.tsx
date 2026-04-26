@@ -15,6 +15,8 @@ const initialFormState: GalleryFormState = {
   title: "",
   display_order: "0",
 };
+const MAX_FEATURED_GALLERY_IMAGES = 6;
+const FEATURED_LIMIT_ERROR = "Puoi mostrare massimo 6 foto in Home. Deseleziona prima un'altra foto.";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("it-IT");
@@ -29,8 +31,9 @@ export default function AdminGalleriaPage() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [updatingVisibilityId, setUpdatingVisibilityId] = useState<string | null>(null);
+  const [updatingFeaturedId, setUpdatingFeaturedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [form, setForm] = useState<GalleryFormState>(initialFormState);
@@ -44,7 +47,7 @@ export default function AdminGalleriaPage() {
 
     const { data, error } = await supabase
       .from("gallery_images")
-      .select("id, title, image_url, display_order, is_active, created_at, updated_at")
+      .select("id, title, image_url, display_order, is_featured, created_at, updated_at")
       .order("display_order", { ascending: true });
 
     if (error) {
@@ -102,8 +105,9 @@ export default function AdminGalleriaPage() {
 
     const title = form.title.trim();
     const displayOrder = Number(form.display_order);
+    const isEditing = Boolean(editingId);
 
-    if (!selectedFile) {
+    if (!isEditing && !selectedFile) {
       setErrorMessage("Seleziona un'immagine da caricare");
       setIsSubmitting(false);
       return;
@@ -115,53 +119,64 @@ export default function AdminGalleriaPage() {
       return;
     }
 
-    const extension = selectedFile.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const safeTitle = title.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
-    const fileName = `${Date.now()}-${safeTitle || "immagine"}-${crypto.randomUUID()}.${extension}`;
-    const filePath = `admin/${fileName}`;
-    const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    let nextImageUrl: string | null = null;
+    if (selectedFile) {
+      const extension = selectedFile.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const safeTitle = title.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-_]/g, "").toLowerCase();
+      const fileName = `${Date.now()}-${safeTitle || "immagine"}-${crypto.randomUUID()}.${extension}`;
+      const filePath = `admin/${fileName}`;
 
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[WARN][Gallery]", "Upload start", { filePath, fileName: selectedFile.name, fileSize: selectedFile.size });
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[WARN][Gallery]", "Upload start", { filePath, fileName: selectedFile.name, fileSize: selectedFile.size });
+      }
+
+      const { error: uploadError } = await supabase.storage.from("gallery").upload(filePath, selectedFile, {
+        cacheControl: "3600",
+        contentType: selectedFile.type,
+        upsert: false,
+      });
+
+      if (uploadError) {
+        console.error("[ERROR][Gallery]", uploadError);
+        setErrorMessage(getReadableErrorMessage("Errore durante il caricamento dell'immagine", uploadError));
+        setIsSubmitting(false);
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("gallery").getPublicUrl(filePath);
+
+      if (process.env.NODE_ENV === "development") {
+        const shortPublicUrl = publicUrl ? `${publicUrl.slice(0, 80)}...` : "none";
+        console.warn("[WARN][Gallery]", "Public URL generated", { filePath, url: shortPublicUrl });
+      }
+
+      if (!publicUrl) {
+        console.error("[ERROR][Gallery]", { message: "Empty public URL", filePath });
+        setErrorMessage("Impossibile ottenere l'URL pubblico dell'immagine.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      nextImageUrl = publicUrl;
     }
 
-    const { error: uploadError } = await supabase.storage.from("gallery").upload(filePath, selectedFile, {
-      cacheControl: "3600",
-      contentType: selectedFile.type,
-      upsert: false,
-    });
-
-    if (uploadError) {
-      console.error("[ERROR][Gallery]", uploadError);
-      setErrorMessage(getReadableErrorMessage("Errore durante il caricamento dell'immagine", uploadError));
-      setIsSubmitting(false);
-      return;
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("gallery").getPublicUrl(filePath);
-
-    if (process.env.NODE_ENV === "development") {
-      const shortPublicUrl = publicUrl ? `${publicUrl.slice(0, 80)}...` : "none";
-      console.warn("[WARN][Gallery]", "Public URL generated", { filePath, url: shortPublicUrl });
-    }
-
-    if (!publicUrl) {
-      console.error("[ERROR][Gallery]", { message: "Empty public URL", filePath });
-      setErrorMessage("Impossibile ottenere l'URL pubblico dell'immagine.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const payload = {
+    const basePayload = {
       title,
-      image_url: publicUrl,
       display_order: displayOrder,
-      is_active: true,
     };
 
-    const { error } = await supabase.from("gallery_images").insert(payload);
+    const { error } = editingId
+      ? await supabase
+          .from("gallery_images")
+          .update(nextImageUrl ? { ...basePayload, image_url: nextImageUrl } : basePayload)
+          .eq("id", editingId)
+      : await supabase.from("gallery_images").insert({
+          ...basePayload,
+          is_active: true,
+          image_url: nextImageUrl!,
+        });
 
     if (error) {
       console.error("[ERROR][Gallery]", error);
@@ -171,6 +186,7 @@ export default function AdminGalleriaPage() {
     }
 
     setForm(initialFormState);
+    setEditingId(null);
     setSelectedFile(null);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -182,6 +198,37 @@ export default function AdminGalleriaPage() {
     setSuccessMessage("Salvataggio completato");
     setIsSubmitting(false);
     await fetchImages();
+  };
+
+  const onEdit = (image: GalleryImage) => {
+    setEditingId(image.id);
+    setForm({
+      title: image.title ?? "",
+      display_order: String(image.display_order),
+    });
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const resetForm = () => {
+    setForm(initialFormState);
+    setEditingId(null);
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const onDelete = async (id: string) => {
@@ -210,21 +257,36 @@ export default function AdminGalleriaPage() {
     await fetchImages();
   };
 
-  const onToggleVisibility = async (id: string, nextValue: boolean) => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    setUpdatingVisibilityId(id);
-
-    const { error } = await supabase.from("gallery_images").update({ is_active: nextValue }).eq("id", id);
-
-    if (error) {
-      setErrorMessage(getReadableErrorMessage("Errore durante l'aggiornamento della visibilita", error));
-      setUpdatingVisibilityId(null);
+  const onToggleFeatured = async (id: string, nextValue: boolean) => {
+    const currentRow = images.find((image) => image.id === id);
+    if (!currentRow) {
       return;
     }
 
-    setImages((prev) => prev.map((img) => (img.id === id ? { ...img, is_active: nextValue } : img)));
-    setUpdatingVisibilityId(null);
+    if (
+      nextValue &&
+      !currentRow.is_featured &&
+      images.filter((image) => image.is_featured && image.id !== id).length >= MAX_FEATURED_GALLERY_IMAGES
+    ) {
+      setErrorMessage(FEATURED_LIMIT_ERROR);
+      setSuccessMessage(null);
+      return;
+    }
+
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setUpdatingFeaturedId(id);
+
+    const { error } = await supabase.from("gallery_images").update({ is_featured: nextValue }).eq("id", id);
+
+    if (error) {
+      setErrorMessage(getReadableErrorMessage("Errore durante l'aggiornamento della Home", error));
+      setUpdatingFeaturedId(null);
+      return;
+    }
+
+    setImages((prev) => prev.map((img) => (img.id === id ? { ...img, is_featured: nextValue } : img)));
+    setUpdatingFeaturedId(null);
   };
 
   return (
@@ -235,7 +297,7 @@ export default function AdminGalleriaPage() {
       </div>
 
       <Card>
-        <h2 className="text-lg font-semibold text-gray-900">Nuova immagine</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{editingId ? "Modifica immagine" : "Nuova immagine"}</h2>
         <form onSubmit={onSubmit} className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
           <label className="flex min-w-0 flex-col gap-2 text-sm md:col-span-2">
             <span className="font-medium text-gray-700">Titolo</span>
@@ -255,8 +317,9 @@ export default function AdminGalleriaPage() {
               accept="image/*"
               onChange={onFileChange}
               className="min-h-11 w-full cursor-pointer rounded-lg border border-border px-3 py-2 text-base file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-medium hover:file:bg-gray-200 md:min-h-0 md:text-sm"
-              required
+              required={!editingId}
             />
+            {editingId ? <span className="text-xs text-gray-500">Lascia vuoto per mantenere l'immagine attuale.</span> : null}
           </label>
 
           <label className="flex min-w-0 flex-col gap-2 text-sm md:col-span-2">
@@ -283,13 +346,24 @@ export default function AdminGalleriaPage() {
           ) : null}
 
           <div className="md:col-span-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="min-h-11 w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {isSubmitting ? "Salvataggio..." : "Aggiungi immagine"}
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="min-h-11 w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {isSubmitting ? "Salvataggio..." : editingId ? "Salva" : "Aggiungi immagine"}
+              </button>
+              {editingId ? (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="min-h-11 w-full rounded-full border border-border px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 sm:w-auto"
+                >
+                  Annulla
+                </button>
+              ) : null}
+            </div>
           </div>
         </form>
       </Card>
@@ -320,7 +394,7 @@ export default function AdminGalleriaPage() {
                 <tr className="border-b border-border text-gray-500">
                   <th className="py-2 pr-3">Titolo</th>
                   <th className="py-2 pr-3">Ordine</th>
-                  <th className="py-2 pr-3">Visibile</th>
+                  <th className="py-2 pr-3">Home</th>
                   <th className="py-2 pr-3">Aggiornata</th>
                   <th className="py-2">Azioni</th>
                 </tr>
@@ -336,23 +410,32 @@ export default function AdminGalleriaPage() {
                     <td className="py-3 pr-3">
                       <input
                         type="checkbox"
-                        checked={image.is_active}
-                        onChange={(event) => void onToggleVisibility(image.id, event.target.checked)}
-                        disabled={updatingVisibilityId === image.id}
+                        checked={image.is_featured}
+                        onChange={(event) => void onToggleFeatured(image.id, event.target.checked)}
+                        disabled={updatingFeaturedId === image.id}
                         className="h-4 w-4 rounded border-border"
-                        aria-label="Visibile"
+                        aria-label={image.is_featured ? "Mostra in Home" : "Nascondi dalla Home"}
                       />
                     </td>
                     <td className="py-3 pr-3">{formatDate(image.updated_at)}</td>
                     <td className="py-3">
-                      <button
-                        type="button"
-                        onClick={() => onDelete(image.id)}
-                        disabled={deletingId === image.id}
-                        className="inline-flex min-h-9 items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {deletingId === image.id ? "Elimino..." : "Elimina"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(image)}
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-border px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          Modifica
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(image.id)}
+                          disabled={deletingId === image.id}
+                          className="inline-flex min-h-9 items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {deletingId === image.id ? "Elimino..." : "Elimina"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,11 +1,10 @@
 import { Button } from "@/components/shared/Button";
 import { Container } from "@/components/shared/Container";
 import { SectionTitle } from "@/components/shared/SectionTitle";
-import { getActiveGalleryImages } from "@/lib/supabase/gallery";
+import { getFeaturedGalleryImages } from "@/lib/supabase/gallery";
 
 export async function GalleryPreview() {
-  const { data: images, error } = await getActiveGalleryImages();
-  const previewImages = images.slice(0, 6);
+  const { data: previewImages, error } = await getFeaturedGalleryImages(6);
 
   return (
     <section className="min-w-0 py-10 sm:py-12 md:py-14">
@@ -37,7 +36,7 @@ export async function GalleryPreview() {
           </div>
         )}
         <div className="mt-8 text-center">
-          <Button href="/galleria">Vai alla galleria</Button>
+          <Button href="/galleria">Vai alla galleria completa</Button>
         </div>
       </Container>
     </section>

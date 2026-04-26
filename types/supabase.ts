@@ -14,6 +14,7 @@ export type Video = {
   youtube_url: string;
   display_order: number;
   is_active: boolean;
+  is_featured: boolean;
   description?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -26,6 +27,7 @@ export type GalleryImage = {
   category?: string | null;
   display_order: number;
   is_active: boolean;
+  is_featured: boolean;
   created_at: string;
   updated_at: string;
 };
