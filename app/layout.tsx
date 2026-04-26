@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { DisableZoom } from "@/components/layout/DisableZoom";
 import { RotateDeviceOverlay } from "@/components/layout/RotateDeviceOverlay";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
@@ -259,6 +260,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#5B21B6",
 };
@@ -274,11 +277,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full min-w-0 antialiased`}
     >
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
       </head>
       <body className="flex min-h-full min-w-0 flex-col bg-black text-white">
         <ScrollToTop />
         <Header />
+        <DisableZoom />
         <RotateDeviceOverlay />
         <main className="min-w-0 flex-1">{children}</main>
         <Footer />
