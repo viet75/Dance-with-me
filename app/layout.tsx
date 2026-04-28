@@ -55,6 +55,24 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full min-w-0 antialiased`}
     >
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Dance With Me" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <meta name="theme-color" content="#7C3AED" />
+        <meta
+          name="theme-color"
+          content="#7C3AED"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#000000"
+          media="(prefers-color-scheme: dark)"
+        />
         <link
           rel="apple-touch-startup-image"
           href="/splash/iPhone_17_Pro_Max__iPhone_16_Pro_Max_portrait.png"
