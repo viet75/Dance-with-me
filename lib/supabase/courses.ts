@@ -4,6 +4,7 @@ import type { Course as DbCourse } from "@/types/supabase";
 export type CourseView = {
   id: string;
   title: string;
+  teacher_name: string | null;
   slug: string | null;
   level: string | null;
   description: string | null;
@@ -16,6 +17,7 @@ function mapCourseRow(row: DbCourse): CourseView {
   return {
     id: row.id,
     title: row.title || row.name || "",
+    teacher_name: row.teacher_name ?? null,
     slug: row.slug ?? null,
     level: row.level ?? null,
     description: row.description ?? null,

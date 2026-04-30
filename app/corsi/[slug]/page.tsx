@@ -51,6 +51,7 @@ export default async function CourseDetailPage({ params }: Props) {
           {course.level ? (
             <p className="text-sm font-semibold uppercase tracking-wide text-primary">{course.level}</p>
           ) : null}
+          {course.teacher_name ? <p className="text-sm text-gray-500">Con {course.teacher_name}</p> : null}
 
           {course.description ? (
             <div className="max-w-none space-y-3 text-sm leading-relaxed text-gray-700">

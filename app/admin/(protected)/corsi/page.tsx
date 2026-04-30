@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 type CourseAdmin = {
   id: string;
   title: string;
+  teacher_name: string | null;
   slug: string | null;
   description: string | null;
   level: string | null;
@@ -19,6 +20,7 @@ type CourseAdmin = {
 
 type CourseFormState = {
   title: string;
+  teacher_name: string;
   slug: string;
   description: string;
   level: string;
@@ -28,6 +30,7 @@ type CourseFormState = {
 
 const initialFormState: CourseFormState = {
   title: "",
+  teacher_name: "",
   slug: "",
   description: "",
   level: "",
@@ -57,7 +60,7 @@ export default function AdminCorsiPage() {
 
     const { data, error } = await supabase
       .from("courses")
-      .select("id, title, slug, description, level, youtube_url, display_order, is_active, updated_at")
+      .select("id, title, teacher_name, slug, description, level, youtube_url, display_order, is_active, updated_at")
       .order("display_order", { ascending: true });
 
     if (error) {
@@ -106,6 +109,7 @@ export default function AdminCorsiPage() {
 
     const payload = {
       title,
+      teacher_name: form.teacher_name.trim() || null,
       slug: form.slug.trim() || null,
       description: form.description.trim() || null,
       level: form.level.trim() || null,
@@ -135,6 +139,7 @@ export default function AdminCorsiPage() {
     setEditingId(course.id);
     setForm({
       title: course.title,
+      teacher_name: course.teacher_name ?? "",
       slug: course.slug ?? "",
       description: course.description ?? "",
       level: course.level ?? "",
@@ -204,6 +209,19 @@ export default function AdminCorsiPage() {
               className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
               required
             />
+          </label>
+
+          <label className="flex min-w-0 flex-col gap-2 text-sm">
+            <span className="font-medium text-gray-700">Insegnante</span>
+            <input
+              value={form.teacher_name}
+              onChange={(event) => setForm((prev) => ({ ...prev, teacher_name: event.target.value }))}
+              placeholder="Es. Nome insegnante"
+              className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
+            />
+            <span className="text-xs text-gray-500">
+              Il nome dell&apos;insegnante verrà mostrato separatamente dal titolo.
+            </span>
           </label>
 
           <label className="flex min-w-0 flex-col gap-2 text-sm">
@@ -314,6 +332,9 @@ export default function AdminCorsiPage() {
                     <td className="py-3 pr-3">
                       <div>
                         <p className="font-medium text-gray-900">{course.title}</p>
+                        {course.teacher_name ? (
+                          <p className="text-xs text-gray-500">Insegnante: {course.teacher_name}</p>
+                        ) : null}
                         <p className="text-xs text-gray-500">{course.slug || "Slug non impostato"}</p>
                       </div>
                     </td>

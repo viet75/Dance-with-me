@@ -70,6 +70,7 @@ export default async function CorsiPage() {
                       <p className="text-xs font-semibold uppercase tracking-wide text-primary">{course.level}</p>
                     ) : null}
                     <h2 className="text-xl font-semibold text-gray-900">{course.title}</h2>
+                    {course.teacher_name ? <p className="text-sm text-gray-500">Con {course.teacher_name}</p> : null}
                     {course.description ? <CourseDescription text={course.description} /> : null}
                   </div>
                   {youtubeId ? (

@@ -34,6 +34,9 @@ export async function FeaturedCoursesSection() {
                 <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-400" />
                 <span className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-purple-500">Percorso</span>
                 <h3 className="mt-2 break-words text-xl font-semibold tracking-tight text-gray-900">{course.title}</h3>
+                {course.teacher_name ? (
+                  <p className="mt-1 text-sm text-gray-500">Con {course.teacher_name}</p>
+                ) : null}
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-purple-600 transition-all duration-200 ease-out hover:text-purple-700">
                   Scopri di più <span aria-hidden="true">→</span>
                 </span>

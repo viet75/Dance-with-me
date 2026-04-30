@@ -35,6 +35,7 @@ export type GalleryImage = {
 export type Course = {
   id: string;
   title: string;
+  teacher_name?: string | null;
   slug?: string | null;
   level?: string | null;
   display_order: number;
