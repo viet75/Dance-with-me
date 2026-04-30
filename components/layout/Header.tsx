@@ -32,7 +32,7 @@ function SocialIconLink({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="text-gray-500 transition hover:text-purple-600"
+      className="text-gray-500 transition-colors duration-200 hover:text-purple-600"
     >
       {children}
     </a>
@@ -64,26 +64,26 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-white/30 bg-white/80 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)]"
+      className="sticky top-0 z-50 border-b border-white/20 bg-white/78 backdrop-blur-xl shadow-[0_6px_24px_rgba(15,23,42,0.05)]"
       style={{
         paddingTop: "env(safe-area-inset-top)",
       }}
     >
-      <Container className="relative flex h-14 min-w-0 items-center gap-3 sm:h-16">
+      <Container className="relative flex h-[58px] min-w-0 items-center gap-3 sm:h-[66px]">
         <div className="min-w-0 flex-1">
           <Link
             href="/"
-            className="flex min-w-0 items-center gap-2 overflow-hidden text-base font-semibold tracking-tight text-gray-900 sm:text-lg"
+            className="flex min-w-0 items-center gap-3 overflow-hidden text-base font-semibold tracking-tight text-gray-900 sm:text-lg"
           >
             <Image
               src="/icon-192.png"
               alt="Dance With Me logo"
-              width={32}
-              height={32}
-              className="rounded-md"
+              width={36}
+              height={36}
+              className="rounded-xl shadow-[0_4px_12px_rgba(124,58,237,0.18)]"
               priority
             />
-            <span className="truncate text-lg font-semibold tracking-tight max-md:landscape:hidden md:inline">
+            <span className="truncate text-[1.18rem] font-semibold tracking-[-0.02em] max-md:landscape:hidden md:inline">
               Dance With Me
             </span>
           </Link>
@@ -97,7 +97,7 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-xl px-3.5 py-2 text-sm font-medium transition-colors",
                   isActive ? "text-primary" : "text-gray-700 hover:text-primary",
                 )}
                 aria-current={isActive ? "page" : undefined}

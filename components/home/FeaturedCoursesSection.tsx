@@ -29,10 +29,14 @@ export async function FeaturedCoursesSection() {
               <Link
                 key={course.id}
                 href="/corsi"
-                className="flex min-h-[110px] min-w-0 flex-col justify-center rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:p-6"
+                className="flex min-h-[110px] min-w-0 flex-col justify-center rounded-[2rem] border border-white/40 bg-gradient-to-br from-white via-purple-50/40 to-white px-6 py-6 shadow-[0_12px_36px_rgba(88,28,135,0.08)] transition-all duration-300 hover:shadow-[0_18px_48px_rgba(88,28,135,0.14)] active:scale-[0.99]"
               >
-                <h3 className="break-words text-base font-semibold text-gray-900 sm:text-lg">{course.title}</h3>
-                <span className="mt-2 text-sm font-medium text-primary">Scopri di più</span>
+                <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-400" />
+                <span className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-purple-500">Percorso</span>
+                <h3 className="mt-2 break-words text-xl font-semibold tracking-tight text-gray-900">{course.title}</h3>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-purple-600 transition hover:text-purple-700">
+                  Scopri di più <span aria-hidden="true">→</span>
+                </span>
               </Link>
             ))}
           </div>

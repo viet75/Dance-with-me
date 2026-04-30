@@ -13,19 +13,19 @@ export async function Footer() {
   const hasSocialLinks = Boolean(mapsUrl || facebookUrl || instagramUrl || youtubeUrl);
 
   return (
-    <footer className="mt-16 w-full min-w-0 border-t border-gray-200 bg-white">
-      <Container className="max-w-6xl px-4 pb-6 pt-8 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 flex-col gap-6">
+    <footer className="mt-16 w-full min-w-0 border-t border-white/30 bg-gradient-to-b from-white to-purple-50/30">
+      <Container className="max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+        <div className="flex min-w-0 flex-col gap-8 sm:gap-10">
           {hasSocialLinks ? (
             <div className="flex min-w-0 flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Seguici</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500">Seguici</p>
               <div className="flex min-w-0 flex-wrap gap-x-5 gap-y-2">
                 {facebookUrl ? (
                   <a
                     href={facebookUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-gray-700 transition hover:text-purple-600"
+                    className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-700 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
                   >
                     Facebook
                   </a>
@@ -35,7 +35,7 @@ export async function Footer() {
                     href={instagramUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-gray-700 transition hover:text-purple-600"
+                    className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-700 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
                   >
                     Instagram
                   </a>
@@ -45,7 +45,7 @@ export async function Footer() {
                     href={youtubeUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-gray-700 transition hover:text-purple-600"
+                    className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-700 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
                   >
                     YouTube
                   </a>
@@ -55,7 +55,7 @@ export async function Footer() {
                     href={mapsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-gray-700 transition hover:text-purple-600"
+                    className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-700 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
                   >
                     Google Maps
                   </a>
@@ -65,19 +65,25 @@ export async function Footer() {
           ) : null}
 
           <div className="flex min-w-0 flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Link utili</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500">Link utili</p>
             <div className="flex min-w-0 flex-wrap gap-x-5 gap-y-2">
-              <Link href="/contatti" className="text-sm text-gray-700 transition hover:text-purple-600">
+              <Link
+                href="/contatti"
+                className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-700 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
+              >
                 Contatti
               </Link>
-              <Link href="/admin" className="text-sm text-gray-700 transition hover:text-purple-600">
+              <Link
+                href="/admin"
+                className="inline-flex items-center rounded-full px-3 py-2 text-sm text-gray-500 transition-all duration-200 hover:bg-white/70 hover:text-purple-600"
+              >
                 Area Admin
               </Link>
             </div>
           </div>
 
-          <div className="mt-8 border-t border-gray-200" />
-          <p className="mt-6 min-w-0 break-words text-center text-sm text-gray-500">
+          <div className="mt-8 border-t border-white/40" />
+          <p className="mt-6 min-w-0 break-words text-center text-sm tracking-tight text-gray-500">
             © {new Date().getFullYear()} {schoolName}. Tutti i diritti riservati.
           </p>
         </div>

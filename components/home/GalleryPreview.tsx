@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/shared/Button";
 import { Container } from "@/components/shared/Container";
 import { SectionTitle } from "@/components/shared/SectionTitle";
@@ -24,14 +25,19 @@ export async function GalleryPreview() {
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
             {previewImages.map((image) => (
-              <article key={image.id} className="min-w-0 overflow-hidden rounded-2xl border border-border bg-white">
+              <Link
+                key={image.id}
+                href="/galleria"
+                aria-label="Apri galleria completa"
+                className="block min-w-0 overflow-hidden rounded-2xl border border-border bg-white cursor-pointer transition-transform duration-200 active:scale-[0.98] md:hover:scale-[1.01]"
+              >
                 <img
                   src={image.image_url}
                   alt={image.title || "Immagine galleria"}
                   loading="lazy"
-                  className="aspect-square h-full w-full max-w-full object-cover transition-transform duration-300 hover:scale-105"
+                  className="aspect-square h-full w-full max-w-full object-cover transition-transform duration-300 md:hover:scale-105"
                 />
-              </article>
+              </Link>
             ))}
           </div>
         )}
