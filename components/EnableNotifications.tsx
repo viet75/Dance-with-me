@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function EnableNotifications() {
-  const [enabled, setEnabled] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | "unsupported">(
+    "default",
+  );
   const [isActivating, setIsActivating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -16,8 +18,24 @@ export function EnableNotifications() {
   };
 
   const enableNotifications = async () => {
-    if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+    if (
+      typeof window === "undefined" ||
+      typeof navigator === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      !("Notification" in window)
+    ) {
+      setNotificationPermission("unsupported");
       setErrorMessage("Questo browser non supporta le notifiche push.");
+      return;
+    }
+
+    const currentPermission = Notification.permission;
+    setNotificationPermission(currentPermission);
+
+    if (currentPermission === "granted") {
+      setErrorMessage(null);
+    } else if (currentPermission === "denied") {
+      setErrorMessage("Notifiche bloccate nel browser. Abilitale dalle impostazioni del sito.");
       return;
     }
 
@@ -31,7 +49,9 @@ export function EnableNotifications() {
     setErrorMessage(null);
 
     try {
-      const permission = await Notification.requestPermission();
+      const permission =
+        currentPermission === "default" ? await Notification.requestPermission() : currentPermission;
+      setNotificationPermission(permission);
       if (permission !== "granted") {
         setErrorMessage("Permesso notifiche non concesso.");
         return;
@@ -60,8 +80,6 @@ export function EnableNotifications() {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(body?.error || "Errore durante il salvataggio della sottoscrizione.");
       }
-
-      setEnabled(true);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Errore inatteso durante l'attivazione delle notifiche.";
@@ -70,6 +88,18 @@ export function EnableNotifications() {
       setIsActivating(false);
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setNotificationPermission("unsupported");
+      return;
+    }
+
+    setNotificationPermission(Notification.permission);
+  }, []);
+
+  const notificationsEnabled = notificationPermission === "granted";
+  const isUnsupported = notificationPermission === "unsupported";
 
   return (
     <section className="rounded-2xl border border-purple-100 bg-purple-50/60 p-5 shadow-sm sm:p-6">
@@ -83,10 +113,10 @@ export function EnableNotifications() {
       <div className="mt-4 space-y-2">
         <button
           onClick={enableNotifications}
-          disabled={enabled || isActivating}
+          disabled={notificationsEnabled || isActivating || isUnsupported}
           className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 ease-out hover:bg-purple-700 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
-          {enabled ? "Notifiche attive" : isActivating ? "Attivazione..." : "Attiva notifiche"}
+          {notificationsEnabled ? "Notifiche attive" : isActivating ? "Attivazione..." : "Attiva notifiche"}
         </button>
         {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
       </div>
