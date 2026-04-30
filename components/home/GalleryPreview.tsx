@@ -29,7 +29,7 @@ export async function GalleryPreview() {
                 key={image.id}
                 href="/galleria"
                 aria-label="Apri galleria completa"
-                className="block min-w-0 overflow-hidden rounded-2xl border border-border bg-white cursor-pointer transition-transform duration-200 active:scale-[0.98] md:hover:scale-[1.01]"
+                className="block min-w-0 overflow-hidden rounded-2xl border border-border bg-white cursor-pointer transition-all duration-200 ease-out active:scale-[0.98] md:hover:scale-[1.01]"
               >
                 <img
                   src={image.image_url}
@@ -42,7 +42,9 @@ export async function GalleryPreview() {
           </div>
         )}
         <div className="mt-8 text-center">
-          <Button href="/galleria">Vai alla galleria completa</Button>
+          <Button href="/galleria" className="transition-all duration-200 ease-out active:scale-[0.97]">
+            Vai alla galleria completa
+          </Button>
         </div>
       </Container>
     </section>

@@ -16,8 +16,10 @@ export function HeroSection() {
           moderno e coinvolgente.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button href="/corsi">Scopri i corsi</Button>
-          <Button href="/contatti" variant="secondary">
+          <Button href="/corsi" className="transition-all duration-200 ease-out active:scale-[0.97]">
+            Scopri i corsi
+          </Button>
+          <Button href="/contatti" variant="secondary" className="transition-all duration-200 ease-out active:scale-[0.97]">
             Prenota una prova
           </Button>
         </div>

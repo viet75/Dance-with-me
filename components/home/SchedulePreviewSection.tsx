@@ -30,7 +30,7 @@ export function SchedulePreviewSection() {
             <Button
               href="/orari"
               variant="secondary"
-              className="inline-flex items-center gap-2 rounded-full px-6 shadow-[0_8px_24px_rgba(88,28,135,0.10)]"
+              className="inline-flex items-center gap-2 rounded-full px-6 shadow-[0_8px_24px_rgba(88,28,135,0.10)] transition-all duration-200 ease-out active:scale-[0.97]"
             >
               Vedi tutti gli orari <span aria-hidden="true">→</span>
             </Button>

@@ -84,7 +84,7 @@ export function EnableNotifications() {
         <button
           onClick={enableNotifications}
           disabled={enabled || isActivating}
-          className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 ease-out hover:bg-purple-700 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
         >
           {enabled ? "Notifiche attive" : isActivating ? "Attivazione..." : "Attiva notifiche"}
         </button>

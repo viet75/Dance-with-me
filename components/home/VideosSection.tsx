@@ -45,7 +45,9 @@ export async function VideosSection() {
               ))}
             </div>
             <div className="mt-8 text-center">
-              <Button href="/video">Guarda tutti i video</Button>
+              <Button href="/video" className="transition-all duration-200 ease-out active:scale-[0.97]">
+                Guarda tutti i video
+              </Button>
             </div>
           </>
         )}

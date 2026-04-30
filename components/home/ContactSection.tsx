@@ -72,7 +72,9 @@ export async function ContactSection() {
             )}
           </div>
           <div className="flex min-w-0 items-start sm:items-end">
-            <Button href="/contatti">Vai alla pagina contatti</Button>
+            <Button href="/contatti" className="transition-all duration-200 ease-out active:scale-[0.97]">
+              Vai alla pagina contatti
+            </Button>
           </div>
         </div>
       </Container>

@@ -42,7 +42,7 @@ export async function NewsSection() {
           </div>
         )}
         <div className="mt-6">
-          <Link href="/news" className="text-sm font-semibold text-primary hover:text-violet-700">
+          <Link href="/news" className="text-sm font-semibold text-primary transition-all duration-200 ease-out active:scale-[0.97] hover:text-violet-700">
             Vai a tutte le news →
           </Link>
         </div>
