@@ -11,7 +11,9 @@ export function RotateDeviceOverlay() {
       return;
     }
 
-    const mediaQuery = window.matchMedia("(max-width: 1024px) and (orientation: landscape)");
+    const mediaQuery = window.matchMedia(
+      "(max-width: 1024px) and (orientation: landscape) and (pointer: coarse)",
+    );
     const updateVisibility = () => setShowOverlay(mediaQuery.matches);
 
     updateVisibility();
