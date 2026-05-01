@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { Card } from "@/components/shared/Card";
+import { TeacherAvatar } from "@/components/shared/TeacherAvatar";
 import { supabase } from "@/lib/supabase/client";
 import { generateSlug } from "@/lib/utils/slug";
 
@@ -10,6 +11,7 @@ type CourseAdmin = {
   id: string;
   title: string;
   teacher_name: string | null;
+  teacher_image_url: string | null;
   slug: string | null;
   description: string | null;
   level: string | null;
@@ -22,6 +24,7 @@ type CourseAdmin = {
 type CourseFormState = {
   title: string;
   teacher_name: string;
+  teacher_image_url: string;
   description: string;
   level: string;
   youtube_url: string;
@@ -31,6 +34,7 @@ type CourseFormState = {
 const initialFormState: CourseFormState = {
   title: "",
   teacher_name: "",
+  teacher_image_url: "",
   description: "",
   level: "",
   youtube_url: "",
@@ -40,6 +44,22 @@ const initialFormState: CourseFormState = {
 function getReadableErrorMessage(prefix: string, error: unknown): string {
   const message = error instanceof Error ? error.message : "";
   return message ? `${prefix}: ${message}` : prefix;
+}
+
+const MAX_TEACHER_IMAGE_SIZE_BYTES = 3 * 1024 * 1024;
+
+function sanitizeFileName(fileName: string): string {
+  const extension = fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+  const baseName = fileName.replace(/\.[^/.]+$/, "");
+  const safeBaseName = baseName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9-_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+
+  return `${safeBaseName || "teacher"}-${Date.now()}.${extension}`;
 }
 
 export default function AdminCorsiPage() {
@@ -52,6 +72,10 @@ export default function AdminCorsiPage() {
   const [form, setForm] = useState<CourseFormState>(initialFormState);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [uploadingTeacherImage, setUploadingTeacherImage] = useState(false);
+  const [teacherImageStatusMessage, setTeacherImageStatusMessage] = useState<string | null>(null);
+  const [isTeacherImageUnavailable, setIsTeacherImageUnavailable] = useState(false);
+  const teacherImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchCourses = useCallback(async () => {
     setIsLoading(true);
@@ -59,7 +83,7 @@ export default function AdminCorsiPage() {
 
     const { data, error } = await supabase
       .from("courses")
-      .select("id, title, teacher_name, slug, description, level, youtube_url, display_order, is_active, updated_at")
+      .select("id, title, teacher_name, teacher_image_url, slug, description, level, youtube_url, display_order, is_active, updated_at")
       .order("display_order", { ascending: true });
 
     if (error) {
@@ -83,11 +107,83 @@ export default function AdminCorsiPage() {
   const resetForm = () => {
     setForm(initialFormState);
     setEditingId(null);
+    setTeacherImageStatusMessage(null);
+    setUploadingTeacherImage(false);
+    setIsTeacherImageUnavailable(false);
+    if (teacherImageInputRef.current) {
+      teacherImageInputRef.current.value = "";
+    }
+  };
+
+  const onTeacherImageFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) {
+      setTeacherImageStatusMessage("Nessun file selezionato.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setTeacherImageStatusMessage(null);
+    setIsTeacherImageUnavailable(false);
+
+    if (!selectedFile.type.startsWith("image/")) {
+      setErrorMessage("Puoi caricare solo file immagine.");
+      event.target.value = "";
+      return;
+    }
+
+    if (selectedFile.size > MAX_TEACHER_IMAGE_SIZE_BYTES) {
+      setErrorMessage("La foto insegnante non puo superare 3MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setUploadingTeacherImage(true);
+
+    const filePath = `teacher-images/${sanitizeFileName(selectedFile.name)}`;
+    const { error: uploadError } = await supabase.storage.from("gallery").upload(filePath, selectedFile, {
+      cacheControl: "3600",
+      contentType: selectedFile.type || "image/jpeg",
+      upsert: false,
+    });
+
+    if (uploadError) {
+      setErrorMessage(getReadableErrorMessage("Errore durante il caricamento della foto insegnante", uploadError));
+      setUploadingTeacherImage(false);
+      event.target.value = "";
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("gallery").getPublicUrl(filePath);
+
+    if (!publicUrl) {
+      setErrorMessage("Impossibile ottenere l'URL pubblico della foto insegnante.");
+      setUploadingTeacherImage(false);
+      event.target.value = "";
+      return;
+    }
+
+    setForm((prev) => ({ ...prev, teacher_image_url: publicUrl }));
+    setTeacherImageStatusMessage("Foto caricata con successo.");
+    setIsTeacherImageUnavailable(false);
+    setUploadingTeacherImage(false);
+  };
+
+  const onRemoveTeacherImage = () => {
+    setForm((prev) => ({ ...prev, teacher_image_url: "" }));
+    setTeacherImageStatusMessage("Foto rimossa dal corso.");
+    setIsTeacherImageUnavailable(false);
+    if (teacherImageInputRef.current) {
+      teacherImageInputRef.current.value = "";
+    }
   };
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isSubmitting) {
+    if (isSubmitting || uploadingTeacherImage) {
       return;
     }
     setErrorMessage(null);
@@ -116,6 +212,7 @@ export default function AdminCorsiPage() {
     const payload = {
       title,
       teacher_name: form.teacher_name.trim() || null,
+      teacher_image_url: form.teacher_image_url.trim() || null,
       slug: resolvedSlug,
       description: form.description.trim() || null,
       level: form.level.trim() || null,
@@ -143,9 +240,15 @@ export default function AdminCorsiPage() {
 
   const onEdit = (course: CourseAdmin) => {
     setEditingId(course.id);
+    setTeacherImageStatusMessage(null);
+    setIsTeacherImageUnavailable(false);
+    if (teacherImageInputRef.current) {
+      teacherImageInputRef.current.value = "";
+    }
     setForm({
       title: course.title,
       teacher_name: course.teacher_name ?? "",
+      teacher_image_url: course.teacher_image_url ?? "",
       description: course.description ?? "",
       level: course.level ?? "",
       youtube_url: course.youtube_url ?? "",
@@ -229,6 +332,47 @@ export default function AdminCorsiPage() {
             </span>
           </label>
 
+          <label className="flex min-w-0 flex-col gap-2 text-sm">
+            <span className="font-medium text-gray-700">Foto insegnante</span>
+            <input
+              ref={teacherImageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(event) => void onTeacherImageFileChange(event)}
+              className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base file:mr-3 file:rounded-full file:border-0 file:bg-violet-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-violet-700 outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
+              disabled={uploadingTeacherImage}
+            />
+            <input
+              value={form.teacher_image_url}
+              placeholder="URL generato automaticamente"
+              readOnly
+              className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
+            />
+            {uploadingTeacherImage ? <span className="text-xs text-gray-500">Upload in corso...</span> : null}
+            {teacherImageStatusMessage ? <span className="text-xs text-gray-500">{teacherImageStatusMessage}</span> : null}
+            {form.teacher_image_url ? (
+              <div className="mt-2 flex items-center gap-3">
+                <TeacherAvatar
+                  imageUrl={form.teacher_image_url}
+                  teacherName={form.teacher_name}
+                  courseTitle={form.title}
+                  className="sm:h-14 sm:w-14"
+                  onImageErrorChange={setIsTeacherImageUnavailable}
+                />
+                <button
+                  type="button"
+                  onClick={onRemoveTeacherImage}
+                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                >
+                  Rimuovi foto
+                </button>
+              </div>
+            ) : null}
+            {form.teacher_image_url && isTeacherImageUnavailable ? (
+              <span className="text-xs text-gray-500">Immagine non disponibile</span>
+            ) : null}
+          </label>
+
           <label className="flex min-w-0 flex-col gap-2 text-sm md:col-span-2">
             <span className="font-medium text-gray-700">Descrizione</span>
             <textarea
@@ -273,7 +417,7 @@ export default function AdminCorsiPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap md:col-span-2">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || uploadingTeacherImage}
               className="min-h-11 shrink-0 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Salvataggio..." : editingId ? "Salva" : "Aggiungi"}

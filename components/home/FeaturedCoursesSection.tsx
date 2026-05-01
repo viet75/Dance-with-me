@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/shared/Container";
 import { SectionTitle } from "@/components/shared/SectionTitle";
+import { TeacherAvatar } from "@/components/shared/TeacherAvatar";
 import { getActiveCourses } from "@/lib/supabase/courses";
 import { generateSlug } from "@/lib/utils/slug";
 
@@ -34,17 +35,20 @@ export async function FeaturedCoursesSection() {
                   key={course.id}
                   href={stableSlug ? `/corsi#${stableSlug}` : "/corsi"}
                   scroll={false}
-                  className="flex min-h-[110px] min-w-0 flex-col justify-center rounded-[2rem] border border-white/40 bg-gradient-to-br from-white via-purple-50/40 to-white px-6 py-6 shadow-[0_12px_36px_rgba(88,28,135,0.08)] transition-all duration-200 ease-out hover:shadow-[0_18px_48px_rgba(88,28,135,0.14)] active:scale-[0.98]"
+                  className="flex min-h-[110px] min-w-0 items-center justify-between gap-4 rounded-[2rem] border border-white/40 bg-gradient-to-br from-white via-purple-50/40 to-white px-6 py-6 shadow-[0_12px_36px_rgba(88,28,135,0.08)] transition-all duration-200 ease-out hover:shadow-[0_18px_48px_rgba(88,28,135,0.14)] active:scale-[0.98]"
                 >
-                  <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-400" />
-                  <span className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-purple-500">Percorso</span>
-                  <h3 className="mt-2 break-words text-xl font-semibold tracking-tight text-gray-900">{course.title}</h3>
-                  {course.teacher_name ? (
-                    <p className="mt-1 text-sm text-gray-500">Con {course.teacher_name}</p>
-                  ) : null}
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-purple-600 transition-all duration-200 ease-out hover:text-purple-700">
-                    Scopri di più <span aria-hidden="true">→</span>
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="h-1.5 w-16 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-400" />
+                    <span className="mt-4 inline-block text-xs font-semibold uppercase tracking-[0.18em] text-purple-500">Percorso</span>
+                    <h3 className="mt-2 break-words text-xl font-semibold tracking-tight text-gray-900">{course.title}</h3>
+                    {course.teacher_name ? (
+                      <p className="mt-1 text-sm text-gray-500">Con {course.teacher_name}</p>
+                    ) : null}
+                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-purple-600 transition-all duration-200 ease-out hover:text-purple-700">
+                      Scopri di più <span aria-hidden="true">→</span>
+                    </span>
+                  </div>
+                  <TeacherAvatar imageUrl={course.teacher_image_url} teacherName={course.teacher_name} courseTitle={course.title} />
                 </Link>
               );
             })}

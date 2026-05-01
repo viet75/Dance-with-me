@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { CourseDescription } from "@/components/shared/CourseDescription";
 import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
+import { TeacherAvatar } from "@/components/shared/TeacherAvatar";
 import { getActiveCourses } from "@/lib/supabase/courses";
 import { generateSlug } from "@/lib/utils/slug";
 
@@ -72,8 +73,13 @@ export default async function CorsiPage() {
                     {course.level ? (
                       <p className="text-xs font-semibold uppercase tracking-wide text-primary">{course.level}</p>
                     ) : null}
-                    <h2 className="text-xl font-semibold text-gray-900">{course.title}</h2>
-                    {course.teacher_name ? <p className="text-sm text-gray-500">Con {course.teacher_name}</p> : null}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <h2 className="break-words text-xl font-semibold text-gray-900">{course.title}</h2>
+                        {course.teacher_name ? <p className="mt-1 text-sm text-gray-500">Con {course.teacher_name}</p> : null}
+                      </div>
+                      <TeacherAvatar imageUrl={course.teacher_image_url} teacherName={course.teacher_name} courseTitle={course.title} />
+                    </div>
                     {course.description ? <CourseDescription text={course.description} /> : null}
                   </div>
                   {youtubeId ? (

@@ -36,6 +36,7 @@ export type Course = {
   id: string;
   title: string;
   teacher_name?: string | null;
+  teacher_image_url?: string | null;
   slug?: string | null;
   level?: string | null;
   display_order: number;
