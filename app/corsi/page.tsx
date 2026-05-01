@@ -4,6 +4,7 @@ import { CourseDescription } from "@/components/shared/CourseDescription";
 import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getActiveCourses } from "@/lib/supabase/courses";
+import { generateSlug } from "@/lib/utils/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export default async function CorsiPage() {
         ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {courses.map((course) => {
+              const stableSlug = course.slug || generateSlug(course.title);
               const youtubeId = getYouTubeId(course.youtube_url);
 
               if (course.youtube_url && !youtubeId) {
@@ -63,7 +65,8 @@ export default async function CorsiPage() {
               return (
                 <article
                   key={course.id}
-                  className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+                  id={stableSlug || undefined}
+                  className="scroll-mt-24 flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
                 >
                   <div className="flex min-h-0 flex-1 flex-col gap-4">
                     {course.level ? (

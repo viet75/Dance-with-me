@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import type { Course as DbCourse } from "@/types/supabase";
+import { generateSlug } from "@/lib/utils/slug";
 
 export type CourseView = {
   id: string;
@@ -14,11 +15,14 @@ export type CourseView = {
 };
 
 function mapCourseRow(row: DbCourse): CourseView {
+  const title = row.title || "";
+  const resolvedSlug = row.slug || generateSlug(title);
+
   return {
     id: row.id,
-    title: row.title || row.name || "",
+    title,
     teacher_name: row.teacher_name ?? null,
-    slug: row.slug ?? null,
+    slug: resolvedSlug || null,
     level: row.level ?? null,
     description: row.description ?? null,
     youtube_url: row.youtube_url ?? null,
@@ -33,7 +37,7 @@ export async function getActiveCourses(): Promise<{
 }> {
   const { data, error } = await supabase
     .from("courses")
-    .select("*")
+    .select("id,title,teacher_name,slug,level,description,youtube_url,display_order,is_active")
     .eq("is_active", true)
     .order("display_order", { ascending: true });
 

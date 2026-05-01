@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { Card } from "@/components/shared/Card";
 import { supabase } from "@/lib/supabase/client";
+import { generateSlug } from "@/lib/utils/slug";
 
 type CourseAdmin = {
   id: string;
@@ -21,7 +22,6 @@ type CourseAdmin = {
 type CourseFormState = {
   title: string;
   teacher_name: string;
-  slug: string;
   description: string;
   level: string;
   youtube_url: string;
@@ -31,7 +31,6 @@ type CourseFormState = {
 const initialFormState: CourseFormState = {
   title: "",
   teacher_name: "",
-  slug: "",
   description: "",
   level: "",
   youtube_url: "",
@@ -107,10 +106,17 @@ export default function AdminCorsiPage() {
       return;
     }
 
+    const resolvedSlug = generateSlug(title);
+
+    if (!resolvedSlug) {
+      setErrorMessage("Impossibile generare uno slug valido dal titolo");
+      return;
+    }
+
     const payload = {
       title,
       teacher_name: form.teacher_name.trim() || null,
-      slug: form.slug.trim() || null,
+      slug: resolvedSlug,
       description: form.description.trim() || null,
       level: form.level.trim() || null,
       youtube_url: form.youtube_url.trim() || null,
@@ -140,7 +146,6 @@ export default function AdminCorsiPage() {
     setForm({
       title: course.title,
       teacher_name: course.teacher_name ?? "",
-      slug: course.slug ?? "",
       description: course.description ?? "",
       level: course.level ?? "",
       youtube_url: course.youtube_url ?? "",
@@ -222,15 +227,6 @@ export default function AdminCorsiPage() {
             <span className="text-xs text-gray-500">
               Il nome dell&apos;insegnante verrà mostrato separatamente dal titolo.
             </span>
-          </label>
-
-          <label className="flex min-w-0 flex-col gap-2 text-sm">
-            <span className="font-medium text-gray-700">Slug (opzionale)</span>
-            <input
-              value={form.slug}
-              onChange={(event) => setForm((prev) => ({ ...prev, slug: event.target.value }))}
-              className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
-            />
           </label>
 
           <label className="flex min-w-0 flex-col gap-2 text-sm md:col-span-2">
@@ -335,7 +331,7 @@ export default function AdminCorsiPage() {
                         {course.teacher_name ? (
                           <p className="text-xs text-gray-500">Insegnante: {course.teacher_name}</p>
                         ) : null}
-                        <p className="text-xs text-gray-500">{course.slug || "Slug non impostato"}</p>
+                        <p className="text-xs text-gray-500">{course.slug || generateSlug(course.title)}</p>
                       </div>
                     </td>
                     <td className="py-3 pr-3">{course.level || "-"}</td>
