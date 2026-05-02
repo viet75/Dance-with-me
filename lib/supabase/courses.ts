@@ -10,6 +10,7 @@ export type CourseView = {
   slug: string | null;
   level: string | null;
   description: string | null;
+  /** URL video incorporato (YouTube o Vimeo); colonna DB `youtube_url`. */
   youtube_url?: string | null;
   display_order: number;
   is_active: boolean;

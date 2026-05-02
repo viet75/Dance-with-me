@@ -384,11 +384,11 @@ export default function AdminCorsiPage() {
           </label>
 
           <label className="flex min-w-0 flex-col gap-2 text-sm md:col-span-2">
-            <span className="font-medium text-gray-700">Link YouTube</span>
+            <span className="font-medium text-gray-700">URL video</span>
             <input
               value={form.youtube_url}
               onChange={(event) => setForm((prev) => ({ ...prev, youtube_url: event.target.value }))}
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder="https://www.youtube.com/watch?v=... oppure https://vimeo.com/..."
               className="min-h-11 min-w-0 w-full rounded-lg border border-border px-3 py-2 text-base outline-none ring-primary/20 focus:ring md:min-h-0 md:text-sm"
             />
           </label>

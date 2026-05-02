@@ -6,6 +6,7 @@ import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { TeacherAvatar } from "@/components/shared/TeacherAvatar";
 import { getActiveCourses } from "@/lib/supabase/courses";
 import { generateSlug } from "@/lib/utils/slug";
+import { getVideoEmbedUrl } from "@/lib/utils/videoEmbed";
 
 export const dynamic = "force-dynamic";
 
@@ -13,24 +14,6 @@ export const metadata: Metadata = {
   title: "Corsi | Dance With Me",
   description: "Scopri i corsi disponibili di Dance With Me.",
 };
-
-function getYouTubeId(url?: string | null) {
-  if (!url) return null;
-
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=)([^&]+)/,
-    /(?:youtu\.be\/)([^?&]+)/,
-    /(?:youtube\.com\/embed\/)([^?&]+)/,
-    /(?:youtube\.com\/shorts\/)([^?&]+)/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match?.[1]) return match[1];
-  }
-
-  return null;
-}
 
 export default async function CorsiPage() {
   const { data: courses, error } = await getActiveCourses();
@@ -54,12 +37,12 @@ export default async function CorsiPage() {
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {courses.map((course) => {
               const stableSlug = course.slug || generateSlug(course.title);
-              const youtubeId = getYouTubeId(course.youtube_url);
+              const embedUrl = getVideoEmbedUrl(course.youtube_url);
 
-              if (course.youtube_url && !youtubeId) {
+              if (course.youtube_url && !embedUrl) {
                 if (process.env.NODE_ENV === "development") {
                   const shortUrl = course.youtube_url.length > 80 ? `${course.youtube_url.slice(0, 80)}...` : course.youtube_url;
-                  console.warn("[WARN][YouTube]", "Invalid URL", { courseId: course.id, url: shortUrl });
+                  console.warn("[WARN][video]", "Invalid URL", { courseId: course.id, url: shortUrl });
                 }
               }
 
@@ -82,11 +65,11 @@ export default async function CorsiPage() {
                     </div>
                     {course.description ? <CourseDescription text={course.description} /> : null}
                   </div>
-                  {youtubeId ? (
+                  {embedUrl ? (
                     <div className="mt-auto pt-4">
                       <div className="relative aspect-video w-full overflow-hidden rounded-xl">
                         <iframe
-                          src={`https://www.youtube.com/embed/${youtubeId}`}
+                          src={embedUrl}
                           title={course.title}
                           className="h-full w-full"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

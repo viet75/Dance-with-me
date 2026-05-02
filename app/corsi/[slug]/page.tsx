@@ -5,18 +5,13 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/Container";
 import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
 import { getCourseBySlug } from "@/lib/supabase/courses";
+import { getVideoEmbedUrl } from "@/lib/utils/videoEmbed";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
-
-function getYouTubeId(url: string) {
-  const regExp = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/;
-  const match = url.match(regExp);
-  return match ? match[1] : null;
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -38,7 +33,15 @@ export default async function CourseDetailPage({ params }: Props) {
     notFound();
   }
 
-  const youtubeId = course.youtube_url ? getYouTubeId(course.youtube_url.trim()) : null;
+  const embedUrl = getVideoEmbedUrl(course.youtube_url);
+
+  if (course.youtube_url && !embedUrl) {
+    if (process.env.NODE_ENV === "development") {
+      const raw = course.youtube_url;
+      const shortUrl = raw.length > 80 ? `${raw.slice(0, 80)}...` : raw;
+      console.warn("[WARN][video]", "Invalid URL", { courseId: course.id, url: shortUrl });
+    }
+  }
 
   return (
     <>
@@ -61,10 +64,10 @@ export default async function CourseDetailPage({ params }: Props) {
             </div>
           ) : null}
 
-          {youtubeId ? (
+          {embedUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-xl">
               <iframe
-                src={`https://www.youtube.com/embed/${youtubeId}`}
+                src={embedUrl}
                 title={course.title}
                 className="h-full w-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
